@@ -328,18 +328,11 @@ const App: React.FC = () => {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                Deploy L2 Infrastructure
+                x.com/xurrydep
               </h3>
             </div>
             
-            <div className="bg-black/60 p-4 rounded-2xl font-mono text-[11px] text-blue-200/90 leading-relaxed overflow-x-auto border border-blue-500/10 shadow-inner">
-              <div className="text-blue-500/40 mb-2">// Robinhood Chain ID: 46630</div>
-              <div><span className="text-purple-400">contract</span> <span className="text-yellow-400">ArcherGuard</span> {`{`}</div>
-              <div className="pl-4 text-blue-400/60">// Passive Shielding active</div>
-              <div className="pl-4"><span className="text-purple-400">function</span> <span className="text-yellow-400">deployDefense</span>() {`{`}</div>
-              <div className="pl-8 text-green-400">shieldActive = true;</div>
-              <div className="pl-4">{`}`}</div>
-              <div>{`}`}</div>
+            <div className="bg-black/60 p-4 rounded-2xl text-[11px] text-blue-200/90 leading-relaxed overflow-x-auto border border-blue-500/10 shadow-inner">
             </div>
             
             <div className="mt-5 space-y-3">
