@@ -48,15 +48,96 @@ const App: React.FC = () => {
     }
   }, [gameState.isGameStarted, gameState.isGameOver, fetchStrategy]);
 
-  const connectWallet = () => {
-    setTimeout(() => {
+  const connectWallet = async () => {
+    const anyWindow: any = window;
+    const provider = anyWindow.ethereum;
+    if (!provider) {
+      alert('No Ethereum provider found. Install MetaMask or a compatible wallet.');
+      return;
+    }
+
+    const desiredChainId = '0xB626'; // 46630 decimal
+
+    try {
+      // Request account access from the wallet (avoid experimental permission flows)
+      const accounts: string[] = await provider.request({ method: 'eth_requestAccounts' });
+      const address = accounts[0];
+
+      // Ensure correct network (Robinhood Chain Testnet)
+      const currentChain = await provider.request({ method: 'eth_chainId' });
+      if (currentChain !== desiredChainId) {
+        try {
+          await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: desiredChainId }] });
+        } catch (switchError: any) {
+          console.error('wallet_switchEthereumChain error:', switchError);
+          // If the chain is not added, request adding it
+          if (switchError?.code === 4902 || /Unrecognized chain/i.test(switchError?.message || '')) {
+            try {
+              await provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: desiredChainId,
+                  chainName: 'Robinhood Chain Testnet',
+                  rpcUrls: ['https://rpc.testnet.chain.robinhood.com'],
+                  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                  blockExplorerUrls: ['https://explorer.testnet.chain.robinhood.com']
+                }]
+              });
+            } catch (addErr: any) {
+              console.error('wallet_addEthereumChain failed:', addErr);
+              alert('Ağı otomatik ekleyemedik. Lütfen cüzdanınıza manuel olarak aşağıdaki bilgileri ekleyin:\n\n' +
+                'Network Name: Robinhood Chain Testnet\n' +
+                'RPC URL: https://rpc.testnet.chain.robinhood.com\n' +
+                'Chain ID: 46630 (0xB626)\n' +
+                'Currency Symbol: ETH\n' +
+                'Explorer: https://explorer.testnet.chain.robinhood.com');
+            }
+          } else {
+            throw switchError;
+          }
+        }
+      }
+
+      // Read balance (wei hex) and convert to ETH
+      const balanceHex: string = await provider.request({ method: 'eth_getBalance', params: [address, 'latest'] });
+      const wei = BigInt(balanceHex);
+      const balanceNum = Number(wei) / 1e18;
+
       setBlockchain(prev => ({
         ...prev,
         isConnected: true,
-        address: '0x32A...E4c9',
-        balance: '0.500 ETH'
+        address,
+        balance: `${balanceNum.toFixed(4)} ETH`,
+        network: 'Robinhood Chain Testnet'
       }));
-    }, 800);
+
+      // Listen for account / network changes
+      provider.on && provider.on('accountsChanged', (accounts: string[]) => {
+        if (!accounts || accounts.length === 0) {
+          setBlockchain(prev => ({ ...prev, isConnected: false, address: null }));
+        } else {
+          setBlockchain(prev => ({ ...prev, address: accounts[0] }));
+        }
+      });
+
+      provider.on && provider.on('chainChanged', (chainId: string) => {
+        if (chainId !== desiredChainId) {
+          setBlockchain(prev => ({ ...prev, isConnected: false, network: `Unknown (${chainId})` }));
+        } else {
+          setBlockchain(prev => ({ ...prev, network: 'Robinhood Chain Testnet' }));
+        }
+      });
+
+    } catch (error: any) {
+      console.error('connectWallet error', error);
+      const msg = error?.message || String(error);
+      // Specific guidance for MetaMask merged permissions error
+      if (msg.includes('Invalid merged permissions') || msg.includes('endowment:caip25')) {
+        alert('MetaMask izin hatası algılandı. Lütfen MetaMask\n-> Settings -> Security & Privacy -> Connected sites\nüzerinden bu siteyi (localhost) kaldırıp tekrar bağlanmayı deneyin.\nAyrıca farklı bir tarayıcı profili veya port deneyin.');
+      } else {
+        alert('Cüzdan bağlanamadı. Konsolde daha fazla bilgi var. Hata: ' + msg);
+      }
+    }
   };
 
   const addTransaction = (method: string, status: 'pending' | 'success' = 'pending') => {
