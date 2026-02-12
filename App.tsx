@@ -202,8 +202,19 @@ const App: React.FC = () => {
       level: 1,
       isGameOver: false,
       isGameStarted: true,
-      isContractDeployed: false,
+      isContractDeployed: gameState.isContractDeployed,
     });
+  };
+
+  const restartGame = () => {
+    setGameState(prev => ({
+      score: 0,
+      health: 100,
+      level: 1,
+      isGameOver: false,
+      isGameStarted: true,
+      isContractDeployed: prev.isContractDeployed,
+    }));
   };
 
   const onGameOver = () => {
@@ -267,11 +278,22 @@ const App: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <Game 
-                gameState={gameState} 
-                setGameState={setGameState} 
-                onGameOver={onGameOver}
-              />
+                <Game 
+                  gameState={gameState} 
+                  setGameState={setGameState} 
+                  onGameOver={onGameOver}
+                />
+
+                {gameState.isGameStarted && gameState.isGameOver && (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      onClick={restartGame}
+                      className="px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-2xl shadow-lg"
+                    >
+                      Restart
+                    </button>
+                  </div>
+                )}
             )}
           </div>
 
