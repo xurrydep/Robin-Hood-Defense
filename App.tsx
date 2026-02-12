@@ -231,9 +231,9 @@ const App: React.FC = () => {
       <main className="flex-grow flex flex-col lg:flex-row gap-6 p-4 max-w-7xl mx-auto w-full">
         <div className="flex-grow lg:w-2/3 flex flex-col gap-4">
           <div className="bg-[#0f172a] border border-[#1e293b] rounded-2xl overflow-hidden shadow-2xl relative border-t-2 border-t-blue-500/50 min-h-[500px]">
-            {!gameState.isGameStarted ? (
+            {!gameState.isGameStarted && (
               <div className="h-full min-h-[500px] flex flex-col items-center justify-center p-8 text-center relative overflow-hidden bg-slate-950">
-                <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]"></div>
+                <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]" />
                 
                 <div className="relative z-10">
                   <div className="w-28 h-28 mb-8 mx-auto bg-blue-500/10 rounded-3xl flex items-center justify-center border border-blue-500/30 shadow-[0_0_60px_rgba(59,130,246,0.2)] group transition-all duration-700">
@@ -277,14 +277,17 @@ const App: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ) : (
+            )}
+
+            {gameState.isGameStarted && (
+              <>
                 <Game 
                   gameState={gameState} 
                   setGameState={setGameState} 
                   onGameOver={onGameOver}
                 />
 
-                {gameState.isGameStarted && gameState.isGameOver && (
+                {gameState.isGameOver && (
                   <div className="mt-4 flex justify-center">
                     <button
                       onClick={restartGame}
@@ -294,6 +297,7 @@ const App: React.FC = () => {
                     </button>
                   </div>
                 )}
+              </>
             )}
           </div>
 
