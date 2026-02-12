@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "react": "^19.2.4",
+    "ethers": "^6.9.0",
     "@google/genai": "^1.41.0",
     "react-dom": "^19.2.4"
   },
@@ -21,7 +22,6 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
     "hardhat": "^2.19.0",
-    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
-    "ethers": "^6.9.0"
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0"
   }
 }

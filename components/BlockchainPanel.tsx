@@ -64,6 +64,12 @@ const BlockchainPanel: React.FC<BlockchainPanelProps> = ({ blockchain, onDeploy,
             </button>
           )}
 
+          {blockchain.isConnected && !isDeployed && (
+            <div className="text-[10px] text-gray-500 italic mt-2">
+              Note: UI deployment is simulated for demo purposes. To deploy on-chain, follow the README and run the Hardhat deploy (`npm run deploy:robinhood`).
+            </div>
+          )}
+
           {isDeployed && (
             <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl flex items-center gap-4 animate-in fade-in duration-700">
               <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-sm text-black font-bold shadow-[0_0_15px_rgba(59,130,246,0.5)]">
@@ -82,10 +88,15 @@ const BlockchainPanel: React.FC<BlockchainPanelProps> = ({ blockchain, onDeploy,
         <div className="space-y-4">
           <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-widest">
             <span>Mempool Activity</span>
-            <span className="text-blue-400 cursor-pointer hover:underline flex items-center gap-1">
+            <a
+              href={blockchain.address ? `https://explorer.testnet.chain.robinhood.com/address/${blockchain.address}` : 'https://explorer.testnet.chain.robinhood.com'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline flex items-center gap-1"
+            >
               Explorer
               <svg className="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-            </span>
+            </a>
           </div>
 
           <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">

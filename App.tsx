@@ -5,6 +5,7 @@ import Game from './components/Game';
 import BlockchainPanel from './components/BlockchainPanel';
 import Header from './components/Header';
 import { GoogleGenAI } from "@google/genai";
+import { BrowserProvider } from 'ethers';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -155,22 +156,42 @@ const App: React.FC = () => {
   };
 
   const deployContract = () => {
-    if (!blockchain.isConnected || blockchain.isDeploying) return;
-    
-    setBlockchain(prev => ({ ...prev, isDeploying: true }));
-    const txHash = addTransaction('Deploy: MithrilShield.sol');
+    (async () => {
+      if (!blockchain.isConnected || blockchain.isDeploying) return;
+      try {
+        setBlockchain(prev => ({ ...prev, isDeploying: true }));
 
-    setTimeout(() => {
-      setBlockchain(prev => ({
-        ...prev,
-        isDeploying: false,
-        balance: '0.482 ETH', 
-        transactions: prev.transactions.map(tx => 
-          tx.hash === txHash ? { ...tx, status: 'success' } : tx
-        )
-      }));
-      setGameState(prev => ({ ...prev, isContractDeployed: true }));
-    }, 2500);
+        const anyWindow: any = window;
+        const provider = new BrowserProvider(anyWindow.ethereum);
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+
+        // Send a 0 ETH transaction to self so a real tx appears on explorer
+        const txResponse = await signer.sendTransaction({ to: address, value: 0n });
+        addTransaction('Deploy: MithrilShield.sol', 'pending');
+
+        // Wait for confirmation
+        const receipt = await txResponse.wait();
+
+        // Update transactions list marking the pending tx as success (match by hash)
+        setBlockchain(prev => ({
+          ...prev,
+          isDeploying: false,
+          transactions: prev.transactions.map(tx => tx.hash === txResponse.hash ? { ...tx, status: 'success' } : tx),
+        }));
+
+        // Refresh balance
+        const bal = await provider.getBalance(address);
+        const balanceNum = Number(bal) / 1e18;
+        setBlockchain(prev => ({ ...prev, balance: `${balanceNum.toFixed(4)} ETH` }));
+
+        setGameState(prev => ({ ...prev, isContractDeployed: true }));
+      } catch (err) {
+        console.error('deployContract error', err);
+        setBlockchain(prev => ({ ...prev, isDeploying: false }));
+        alert('Deploy sırasında hata oluştu. Konsolda detaylara bakın.');
+      }
+    })();
   };
 
   const startGame = () => {
